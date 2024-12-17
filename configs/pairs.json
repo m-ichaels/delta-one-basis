@@ -1,0 +1,30 @@
+{
+  "_doc": "One entry per delta-one triangle. future_root: CME product code (null where the future has no free source); contracts: the listed contracts Yahoo carries (<root><month><yy>.CME); continuous: Yahoo's front-month series; index: the cash index; etf: the listed fund; index_tz/session: the cash session used to align the three legs; tick/multiplier: the future's minimum price increment and contract multiplier; etf_fee_bp: the fund's expense ratio in bp per year; currency selects the financing curve.",
+  "ES": {
+    "label": "S&P 500", "future_root": "ES", "continuous": "ES=F",
+    "contracts": ["ESU26.CME", "ESZ26.CME", "ESH27.CME", "ESM27.CME", "ESU27.CME", "ESZ27.CME"],
+    "index": "^GSPC", "etf": "SPY", "index_tz": "America/New_York", "session": ["09:30", "16:00"],
+    "tick": 0.25, "multiplier": 50, "etf_fee_bp": 9.45, "etf_tick": 0.01, "currency": "USD",
+    "fee_future_usd": 1.30, "etf_commission_per_share": 0.002, "etf_borrow_bp": 30, "basket_top": 25
+  },
+  "NQ": {
+    "label": "Nasdaq-100", "future_root": "NQ", "continuous": "NQ=F",
+    "contracts": ["NQU26.CME", "NQZ26.CME", "NQH27.CME", "NQM27.CME", "NQU27.CME"],
+    "index": "^NDX", "etf": "QQQ", "index_tz": "America/New_York", "session": ["09:30", "16:00"],
+    "tick": 0.25, "multiplier": 20, "etf_fee_bp": 20, "etf_tick": 0.01, "currency": "USD",
+    "fee_future_usd": 1.30, "etf_commission_per_share": 0.002, "etf_borrow_bp": 30, "basket_top": 25
+  },
+  "RTY": {
+    "label": "Russell 2000", "future_root": "RTY", "continuous": "RTY=F",
+    "contracts": ["RTYU26.CME", "RTYZ26.CME", "RTYH27.CME", "RTYM27.CME"],
+    "index": "^RUT", "etf": "IWM", "index_tz": "America/New_York", "session": ["09:30", "16:00"],
+    "tick": 0.10, "multiplier": 50, "etf_fee_bp": 19, "etf_tick": 0.01, "currency": "USD",
+    "fee_future_usd": 1.30, "etf_commission_per_share": 0.002, "etf_borrow_bp": 40, "basket_top": 25
+  },
+  "SX5E": {
+    "label": "Euro Stoxx 50", "future_root": null, "continuous": null, "contracts": [],
+    "index": "^STOXX50E", "etf": "EXW1.DE", "index_tz": "Europe/Berlin", "session": ["09:00", "17:30"],
+    "tick": 1.0, "multiplier": 10, "etf_fee_bp": 10, "etf_tick": 0.001, "currency": "EUR",
+    "fee_future_usd": 0.0, "etf_commission_per_share": 0.002, "etf_borrow_bp": 40, "basket_top": 0
+  }
+}

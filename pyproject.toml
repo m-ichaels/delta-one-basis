@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "d1basis"
+version = "0.1.0"
+description = "Delta-one basis and lead-lag: ETF, index futures and the cash basket - fair value with measured financing and dividends, mean reversion, Hayashi-Yoshida / Hoffmann-Rosenbaum-Vetter lead-lag, the new-products transfer test and a basis strategy net of costs"
+requires-python = ">=3.10"
+dependencies = ["numpy", "pandas", "pyarrow", "duckdb", "scipy", "matplotlib", "fpdf2", "openpyxl", "tzdata"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools]
+packages = ["d1basis"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
