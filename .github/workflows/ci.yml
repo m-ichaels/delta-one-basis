@@ -1,0 +1,22 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test-and-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .[test] tabulate
+      - run: python -m pytest
+      - name: the whole pipeline on the checked-in data (no downloads)
+        run: |
+          python -m d1basis run --fast
+          python scripts/plots.py
+          python scripts/summarize.py
+          python scripts/report.py
+          python scripts/readme.py --check
+          python -m d1basis panel --pair NQ --tail 5
+          python -m d1basis leadlag --pair ES --interval 1m
+          python -m d1basis sql "SELECT symbol, COUNT(*) n, MIN(date) d0, MAX(date) d1 FROM daily GROUP BY symbol ORDER BY n DESC LIMIT 8"
