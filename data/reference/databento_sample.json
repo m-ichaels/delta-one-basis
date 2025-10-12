@@ -1,0 +1,17 @@
+{
+ "file": "glbx_mdp3_mbp1_sample.csv",
+ "symbol": "ESZ5",
+ "date": "2025-09-21",
+ "rows_loaded": 82548,
+ "mid_changes_session": 82548,
+ "mid_changes_rth": 39992,
+ "median_gap_ms_session": 0.373424,
+ "median_gap_ms_rth": 0.272282,
+ "p10_gap_ms_rth": 0.004952,
+ "p90_gap_ms_rth": 538.11401,
+ "spread_ticks_median": 1.0,
+ "self_contrast_rho0": 1.0,
+ "seconds_to_load": 16.1,
+ "paired_equity_leg": null,
+ "note": "keyless sample; the equities samples (NVDA, 2025-09-16) share no day with it, so no future-vs-fund pair at tick resolution"
+}
