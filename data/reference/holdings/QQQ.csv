@@ -1,0 +1,26 @@
+ticker,name,weight,shares
+NVDA,NVIDIA Corporation,8.46,187450221.0
+AAPL,Apple Inc.,7.89,113763943.0
+MSFT,Microsoft Corporation,5.89,57536967.0
+MU,"Micron Technology, Inc.",4.85,24114282.0
+AMZN,"Amazon.com, Inc.",4.31,83319218.0
+AMD,"Advanced Micro Devices, Inc.",3.91,34867008.0
+GOOGL,Alphabet Inc.,3.22,45109789.0
+META,"Meta Platforms, Inc.",3.22,22936946.0
+GOOG,Alphabet Inc.,2.99,42259491.0
+TSLA,"Tesla, Inc.",2.92,38692383.0
+AVGO,Broadcom Inc.,2.62,36723548.0
+INTC,Intel Corporation,2.41,107470541.0
+WMT,Walmart Inc.,2.29,104309754.0
+CSCO,"Cisco Systems, Inc.",1.91,84279408.0
+PLTR,Palantir Technologies Inc.,1.78,49096743.0
+COST,Costco Wholesale Corporation,1.74,9486609.0
+LRCX,Lam Research Corporation,1.48,26740872.0
+AMAT,"Applied Materials, Inc.",1.46,16977181.0
+NFLX,"Netflix, Inc.",1.4,90039166.0
+PANW,"Palo Alto Networks, Inc.",1.35,17448438.0
+SPCX,Space Exploration Technologies Corp.,1.31,40983891.0
+CRWD,"CrowdStrike Holdings, Inc.",1.1,21774716.0
+SNDK,Sandisk Corporation,1.05,3166611.0
+TXN,Texas Instruments Incorporated,1.03,19460443.0
+KLAC,KLA Corporation,0.97,27931997.0
