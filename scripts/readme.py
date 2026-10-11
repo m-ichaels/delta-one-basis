@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""README.md from scripts/README.template.md and results/run.json, so every number in the README is the run's.
+"""README.md and docs/method.md from scripts/README.template.md, scripts/method.template.md and results/run.json, so every number in the README is the run's.
 python scripts/readme.py [--check]   (--check renders without writing and fails on an unfilled placeholder)"""
 import json
 import os
@@ -184,14 +184,20 @@ for r in tt.itertuples():
     rows.append(f"| {d['pair']} ({d['label']}) | {acc} | {hl} | {mse} | {stt} | {llr} | {d['verdict']} |")
 V["transfer_table"] = "\n".join(rows)
 
-tpl = open(os.path.join(ROOT, "scripts", "README.template.md"), encoding="utf-8").read()
-out = re.sub(r"<<(\w+)>>", lambda m: V.get(m.group(1), f"<<{m.group(1)}>>"), tpl)
-missing = re.findall(r"<<\w+>>", out)
-if missing:
-    print("unfilled:", sorted(set(missing)))
-    sys.exit(1)
-if "--check" in sys.argv:
-    print(f"README renders: {len(out)} chars, {len(V)} values")
-else:
-    open(os.path.join(ROOT, "README.md"), "w", encoding="utf-8", newline="\n").write(out)
-    print("README.md")
+TEMPLATES = (("README.template.md", "README.md"), ("method.template.md", os.path.join("docs", "method.md")))
+outs = []
+for tname, oname in TEMPLATES:
+    tpl = open(os.path.join(ROOT, "scripts", tname), encoding="utf-8").read()
+    out = re.sub(r"<<(\w+)>>", lambda m: V.get(m.group(1), f"<<{m.group(1)}>>"), tpl)
+    missing = re.findall(r"<<\w+>>", out)
+    if missing:
+        print(f"unfilled in {tname}:", sorted(set(missing)))
+        sys.exit(1)
+    outs.append((oname, out))
+for oname, out in outs:
+    if "--check" in sys.argv:
+        print(f"{oname} renders: {len(out)} chars, {len(V)} values")
+    else:
+        os.makedirs(os.path.dirname(os.path.join(ROOT, oname)), exist_ok=True)
+        open(os.path.join(ROOT, oname), "w", encoding="utf-8", newline="\n").write(out)
+        print(oname)
