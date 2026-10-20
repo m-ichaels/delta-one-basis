@@ -1,0 +1,56 @@
+{
+ "what": "leadlag.per_day for every pair of series in the pipeline's lead-lag step: the HY covariance over the lag grid for every day, with the per-day sums of squares; Python (hy_cov per day and shift) against the C++ core (cpp/hy.cpp, one call per pair of series)",
+ "data": "checked-in bars: 1-minute (GRID_1M, -900..900 s by 30 s), 2-minute (GRID_2M, -1800..1800 s by 60 s) and the FirstRate year at one minute (GRID_1M)",
+ "timing": "best of `runs` runs (timeit, gc off) for each implementation",
+ "runs": 7,
+ "date": "2026-10-20",
+ "sets": {
+  "bars_1m": {
+   "calls": 19,
+   "days": 362,
+   "shifts": 61,
+   "observations": 277957,
+   "python_s": 1.1363019999989774,
+   "cpp_s": 0.0268008999992162,
+   "speedup": 42.39790454918338
+  },
+  "bars_2m": {
+   "calls": 10,
+   "days": 270,
+   "shifts": 61,
+   "observations": 110549,
+   "python_s": 0.6852118000097107,
+   "cpp_s": 0.01054770001792349,
+   "speedup": 64.96314825462844
+  },
+  "firstrate_1m": {
+   "calls": 2,
+   "days": 502,
+   "shifts": 61,
+   "observations": 389700,
+   "python_s": 3.0391617999994196,
+   "cpp_s": 0.036876400001347065,
+   "speedup": 82.41481814625075
+  }
+ },
+ "total": {
+  "calls": 31,
+  "days": 1134,
+  "python_s": 4.918142099981196,
+  "cpp_s": 0.07458360001328401,
+  "speedup": 65.94133427596992
+ },
+ "agreement": {
+  "calls": 31,
+  "bit_identical": 31,
+  "max_abs_diff": 0.0
+ },
+ "machine": {
+  "platform": "Windows-10-10.0.19045-SP0",
+  "processor": "Intel64 Family 6 Model 60 Stepping 3, GenuineIntel",
+  "cpu_count": 8,
+  "python": "3.12.8",
+  "numpy": "2.5.4",
+  "extension": "_hy.cp312-win_amd64.pyd"
+ }
+}

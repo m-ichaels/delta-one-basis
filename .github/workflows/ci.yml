@@ -9,6 +9,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e .[test] tabulate
+      - name: build the C++ Hayashi-Yoshida core (pybind11)
+        run: pip install pybind11 setuptools && python build_ext.py build_ext --inplace && python -c "from d1basis import leadlag; assert leadlag.HAVE_EXT; print('extension ok')"
       - run: python -m pytest
       - name: the whole pipeline on the checked-in data (no downloads)
         run: |

@@ -26,7 +26,7 @@ All numbers are in `results/summary.md`; the detail is in [docs/method.md](docs/
 - **Data.** Yahoo daily bars since 2005, one-minute bars archived daily, NY Fed rates, the Treasury curve, SPY holdings and a FirstRateData one-year sample. Futures and ETF dividends come from the funds' own distributions.
 - **Fair value.** F* = I(1 + rτ) − D, with the dividend accrued along a profile read off the fund's price against the index.
 - **Mean reversion.** AR(1) half-life by OLS and by a noise-robust autocovariance ratio, with a block bootstrap.
-- **Lead-lag.** Hayashi–Yoshida covariance over a grid of lags, with the Hoffmann–Rosenbaum–Vetter lead-lag ratio and a day bootstrap.
+- **Lead-lag.** Hayashi–Yoshida covariance over a grid of lags, with the Hoffmann–Rosenbaum–Vetter lead-lag ratio and a day bootstrap. The per-day × lag-grid computation also runs in C++ when built (`cpp/hy.cpp`, pybind11: one call per pair of series, a two-pointer sweep per lag). It returns the Python's numbers to the last bit and is <<hy_speedup>>× faster on the checked-in data: <<hy_cpp_s>> s against <<hy_python_s>> s for the pipeline's <<hy_calls>> pairs of series and <<hy_days>> days (`results/hy_timing.json`).
 - **Strategy and transfer.** Long future against short fund when the implied spread is rich, costed on entry, exit and roll. Parameters fitted on ES are run unchanged on the other pairs.
 
 ## Limitations
@@ -40,9 +40,10 @@ All numbers are in `results/summary.md`; the detail is in [docs/method.md](docs/
 
 ```
 pip install -e .[test]
+pip install pybind11 && python build_ext.py build_ext --inplace   # optional C++ core; build.ps1 on Windows
 python -m pytest                      # <<n_tests>> tests
 python -m d1basis run --fast          # the pipeline on the checked-in data
 scripts/run_all.sh --skip-download    # run, figures, summary, README, notebook, tests
 ```
 
-The README and `docs/method.md` are written by `scripts/readme.py` from `results/run.json`. CI runs the pipeline on the checked-in data and checks that both render.
+The README and `docs/method.md` are written by `scripts/readme.py` from `results/run.json` and `results/hy_timing.json` (`scripts/bench_hy.py`). CI builds the C++ core, runs the pipeline on the checked-in data and checks that both render.

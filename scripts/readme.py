@@ -114,6 +114,14 @@ V["bars_1m_from"] = R["run"]["data"].get("bars_1m_from", "—")
 V["firstrate_from"] = R["run"]["data"].get("firstrate_from", "—")
 V["firstrate_to"] = R["run"]["data"].get("firstrate_to", "—")
 V["n_tests"] = str(sum(len(re.findall(r"^def test_", open(os.path.join(ROOT, "tests", fn), encoding="utf-8").read(), flags=re.M)) for fn in os.listdir(os.path.join(ROOT, "tests")) if fn.endswith(".py")))
+HYT = json.load(open(os.path.join(ROOT, "results", "hy_timing.json")))   # scripts/bench_hy.py: Python against the C++ core
+HY = HYT["total"]
+V["hy_runs"] = str(HYT["runs"])
+V["hy_calls"] = str(HY["calls"])
+V["hy_days"] = f"{HY['days']:,}"
+V["hy_python_s"] = f(HY["python_s"])
+V["hy_cpp_s"] = f(HY["cpp_s"], 2)
+V["hy_speedup"] = f(HY["speedup"], 0)
 tt = pd.DataFrame(R["transfer"]["rows"])
 V["transfer_summary"] = " ".join(f"{r.pair}: {r.verdict}." for r in tt.itertuples() if not r.is_source)
 
