@@ -9,11 +9,21 @@ theta > 0 means X leads Y by theta (Y's increment at s is matched with X's incre
 
 Series are (times in seconds, log prices) with one observation per change; bars pass their bar-end times and closes.
 The overlap sum is computed with two searchsorted calls and a cumulative sum, O((n + m) log m) per theta.
+per_day and contrast call d1basis._hy (cpp/hy.cpp, built by build_ext.py) when it is built: one call per pair of
+series covers every day and shift with a two-pointer sweep, keeping numpy's arithmetic in numpy's order; without it
+they call hy_cov once per day and shift.  tests/test_leadlag.py checks that the two agree.
 """
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+
+try:
+    from . import _hy as _ext            # the compiled core, when built
+    HAVE_EXT = True
+except ImportError:                      # pragma: no cover
+    _ext = None
+    HAVE_EXT = False
 
 
 def hy_cov(tx: np.ndarray, x: np.ndarray, ty: np.ndarray, y: np.ndarray, theta: float = 0.0) -> float:
@@ -36,7 +46,7 @@ def contrast(tx, x, ty, y, grid: np.ndarray) -> pd.DataFrame:
     sx = float(np.sum(np.diff(x) ** 2))
     sy = float(np.sum(np.diff(y) ** 2))
     norm = np.sqrt(sx * sy) if sx > 0 and sy > 0 else np.nan
-    cov = np.array([hy_cov(tx, x, ty, y, th) for th in grid])
+    cov = _ext.hy_grid(tx, x, ty, y, grid) if _ext is not None else np.array([hy_cov(tx, x, ty, y, th) for th in grid])
     return pd.DataFrame({"theta": grid, "cov": cov, "rho": cov / norm})
 
 
@@ -60,7 +70,11 @@ def summarise(df: pd.DataFrame) -> dict:
 
 
 def per_day(tx, x, ty, y, day_x: np.ndarray, day_y: np.ndarray, grid: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, list]:
-    """HY covariance per day over the grid (rows = days) with the per-day sums of squares, for the day bootstrap."""
+    """HY covariance per day over the grid (rows = days) with the per-day sums of squares, for the day bootstrap: one
+    call to the compiled core when it is built, else hy_cov per day and shift."""
+    if _ext is not None:
+        covs, sxs, sys_, days = _ext.hy_per_day(tx, x, ty, y, day_x, day_y, grid)
+        return covs, sxs, sys_, list(days)
     days = sorted(set(day_x) & set(day_y))
     covs, sxs, sys_ = [], [], []
     for d in days:

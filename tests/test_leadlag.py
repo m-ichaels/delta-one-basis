@@ -1,7 +1,28 @@
 import numpy as np
 import pandas as pd
+import pytest
 
+from d1basis import data as D
 from d1basis import leadlag as LL
+from d1basis import run as RUN
+
+
+def python_core(fn, *args):
+    """fn(*args) with the compiled core switched off, i.e. on the Python reference path."""
+    ext, LL._ext = LL._ext, None
+    try:
+        return fn(*args)
+    finally:
+        LL._ext = ext
+
+
+def same_per_day(*args):
+    """per_day(*args) on the compiled core and on the Python path: the same days, shapes and numbers (to 1e-12)."""
+    c, p = LL.per_day(*args), python_core(LL.per_day, *args)
+    assert c[3] == p[3]
+    for u, v in zip(c[:3], p[:3]):
+        assert u.shape == v.shape and np.max(np.abs(u - v), initial=0.0) <= 1e-12
+    return c
 
 
 def test_hy_synchronous_equals_realised_covariance():
@@ -58,3 +79,47 @@ def test_series_from_ticks_collapses_ties_and_self_contrast_is_one():
     assert len(t) == 3 and abs(lx[0] - np.log(100.5)) < 1e-12
     c = LL.contrast(t, lx, t, lx, np.array([0.0]))
     assert abs(c.rho.iloc[0] - 1.0) < 1e-12
+
+
+@pytest.mark.skipif(not LL.HAVE_EXT, reason="compiled core not built")
+def test_cpp_core_matches_python_on_random_asynchronous_series():
+    rng = np.random.default_rng(11)
+    grid = RUN.GRID_1M
+    pairs = [LL.simulate_lagged(n=20000, lag=2.0, rho=0.8, seed=3)]     # long enough for numpy's blocked summation
+    for _ in range(40):
+        n, m = rng.integers(1, 600, 2)                                   # includes series with no increment
+        tx, ty = np.sort(rng.uniform(0, 3600, n)), np.sort(rng.uniform(0, 3600, m))
+        pairs.append((tx, np.cumsum(rng.standard_normal(n)) * 1e-3, ty, np.cumsum(rng.standard_normal(m)) * 1e-3))
+    t = np.arange(50.0)                                                  # the two clocks share ticks
+    pairs.append((t, np.cumsum(rng.standard_normal(50)), t[::2].copy(), np.cumsum(rng.standard_normal(25))))
+    for tx, x, ty, y in pairs:
+        a, b = LL.contrast(tx, x, ty, y, grid), python_core(LL.contrast, tx, x, ty, y, grid)
+        assert len(a) == len(b) == len(grid) and np.max(np.abs(a["cov"].values - b["cov"].values)) <= 1e-12
+        ids = rng.permutation(10)                                        # day ids out of time order
+        same_per_day(tx, x, ty, y, ids[(tx // 400).astype(int) % 10], ids[(ty // 400).astype(int) % 10], grid)
+        # rows of a day interleaved with other days', days seen by one series only, days under three rows
+        same_per_day(tx, x, ty, y, rng.integers(0, 8, len(tx)), rng.integers(2, 10, len(ty)), grid)
+    with pytest.raises(ValueError):                                      # the sweep needs sorted clocks
+        LL.contrast(np.array([0.0, 2.0, 1.0]), np.zeros(3), t, np.zeros(50), grid)
+    with pytest.raises(ValueError):
+        LL.per_day(np.array([0.0, 2.0, 1.0]), np.zeros(3), t, np.zeros(50), np.zeros(3, int), np.zeros(50, int), grid)
+
+
+@pytest.mark.skipif(not LL.HAVE_EXT, reason="compiled core not built")
+def test_cpp_core_matches_python_on_checked_in_bars():
+    """Every daily curve the pipeline computes for ES: future vs ETF and ETF vs index on the 1- and 2-minute bars, and
+    SPY vs SPX over the FirstRate year, each on the pipeline's own grid."""
+    cfg = D.pairs()["ES"]
+    legs = []
+    for iv, bar_s, grid in (("1m", 60, RUN.GRID_1M), ("2m", 120, RUN.GRID_2M)):
+        etf = RUN.session(D.bar_closes(iv, [cfg["etf"]])[cfg["etf"]], cfg)
+        idx = RUN.session(D.bar_closes(iv, [cfg["index"]])[cfg["index"]], cfg)
+        fut = RUN.session(RUN.front_bars(cfg, iv), cfg)
+        legs += [(fut, etf, bar_s, grid), (etf, idx, bar_s, grid)]
+    w = D.bar_closes("1m", ["SPY", "SPX"], source="firstrate")
+    w = w[D.session_mask(w.index, "America/New_York", "09:31", "16:00")]
+    legs.append((w["SPY"].dropna(), w["SPX"].dropna(), 60, RUN.GRID_1M))
+    for a, b, bar_s, grid in legs:
+        ta, xa, da = LL.series_from_bars(a, bar_s)
+        tb, xb, db = LL.series_from_bars(b, bar_s)
+        assert same_per_day(ta, xa, tb, xb, da, db, grid)[0].shape[0] >= 15
